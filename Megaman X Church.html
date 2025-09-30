@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minh Plays Megaman X — Church Edition</title>
+  <style>
+    /* -------------------- Reset & Base -------------------- */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;color:#e9f0ff;background:#070712}
+    a{color:inherit}
+
+    /* -------------------- Layout -------------------- */
+    .stage{min-height:100vh;display:grid;grid-template-columns:380px 1fr;gap:24px;padding:28px}
+    @media (max-width:980px){.stage{grid-template-columns:1fr;padding:14px}}
+
+    /* -------------------- Left Panel (HUD & Controls) -------------------- */
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);backdrop-filter: blur(6px);padding:18px;border-radius:14px;box-shadow: 0 8px 30px rgba(4,8,20,0.6)}
+    .logo{display:flex;gap:12px;align-items:center}
+    .church-badge{width:56px;height:56px;border-radius:12px;background:linear-gradient(120deg,#6be7ff33,#9b6bff44);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 -6px 20px rgba(0,0,0,0.2)}
+    .church-badge svg{width:38px;height:38px;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.35))}
+    h1{font-size:18px;margin-bottom:6px}
+    p.lead{font-size:13px;color:#bcd3ff;margin-bottom:14px}
+
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+    .card h3{font-size:13px;color:#9fc6ff}
+    .value{font-size:20px;font-weight:700}
+
+    /* -------------------- Anime Watcher Cards -------------------- */
+    .anime-row{display:flex;gap:10px;margin-top:14px}
+    .anime{flex:1;border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,#081126,#071022);position:relative;overflow:hidden}
+    .anime .title{font-size:12px;color:#cfe6ff;margin-bottom:8px}
+    .screen{height:120px;border-radius:8px;background:linear-gradient(180deg,#040517,#08102b);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+    .screen .waves{position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%, rgba(255,255,255,0.02), transparent 4%);mix-blend-mode:overlay}
+    .season-badge{position:absolute;right:8px;top:8px;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);padding:6px 8px;border-radius:8px;font-size:11px}
+    .anime .controls{display:flex;gap:8px;margin-top:10px}
+    .btn{padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;cursor:pointer;font-size:13px}
+
+    /* -------------------- Right Panel (Church & Game) -------------------- */
+    .arena{position:relative;border-radius:14px;padding:0;overflow:hidden;border:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,#040617,#07102a);display:flex;flex-direction:column}
+
+    /* stained-glass neon header */
+    .vault{height:120px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,#06243a55,#2a034b33);position:relative}
+    .vault:before{content:"";position:absolute;inset:0;background-image:conic-gradient(from 140deg, rgba(255,255,255,0.02), transparent 30%);mix-blend-mode:overlay}
+    .vault h2{color:#eaf8ff;font-size:20px;text-shadow: 0 6px 24px rgba(50,120,255,0.12)}
+
+    /* parallax stained glass background */
+    .church-bg{position:relative;flex:1;display:grid;grid-template-columns:1fr 420px;gap:0;align-items:stretch}
+    @media (max-width:980px){.church-bg{grid-template-columns:1fr}}
+    .bg-left{position:relative;padding:18px;display:flex;flex-direction:column;gap:12px}
+    .stained{flex:1;border-radius:12px;padding:18px;overflow:hidden;background:radial-gradient(circle at 10% 20%, #0b2b4b, #03101e);border:1px solid rgba(255,255,255,0.02)}
+
+    /* stained glass tiles (decorative) */
+    .glass{position:absolute;inset:0;pointer-events:none}
+    .glass svg{width:100%;height:100%;opacity:0.12;filter:drop-shadow(0 8px 30px rgba(0,0,0,0.6))}
+
+    /* game canvas container */
+    .playground{width:100%;height:340px;border-radius:10px;background:linear-gradient(180deg,#07102b,#02101b);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03);position:relative}
+    canvas{border-radius:8px;max-width:100%;height:auto}
+
+    /* right column: spectator & snacks */
+    .right-col{padding:18px;display:flex;flex-direction:column;gap:12px}
+    .spectator{border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg,#041029,#041022)}
+    .snacks{display:flex;gap:8px;align-items:center}
+    .snack{display:flex;gap:8px;align-items:center;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+    .snack svg{width:44px;height:44px}
+
+    /* footer actions */
+    .actions{display:flex;gap:8px;margin-top:10px}
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.03);background:transparent;font-size:13px}
+
+    /* HUD overlay */
+    .hud{position:absolute;left:18px;top:18px;color:#bfe6ff;font-weight:700;background:rgba(3,12,25,0.5);backdrop-filter:blur(6px);padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.03)}
+
+    /* tiny help */
+    .help{font-size:12px;color:#9dbff6;margin-top:10px}
+
+    /* small animations for anime screens */
+    .anim-loop{width:90%;height:60%;border-radius:6px;background:linear-gradient(90deg,#1b2a4a,#3b164b);display:flex;align-items:center;justify-content:center;color:#cfe6ff;font-weight:700;letter-spacing:0.6px;transform:skewY(-2deg)}
+    .pulse{animation:pulse 3s infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+    /* small responsive touches */
+    footer{margin-top:12px;text-align:center;color:#7ea6ff;font-size:12px}
+
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <!-- LEFT PANEL -->
+    <aside class="panel">
+      <div class="logo">
+        <div class="church-badge" aria-hidden>
+          <!-- stylized church + controller icon -->
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="26" width="52" height="28" rx="4" fill="#ffffff10"/>
+            <path d="M32 6 L22 18 H42 L32 6 Z" fill="#ffffff15"/>
+            <circle cx="20" cy="42" r="3" fill="#9be8ff"/>
+            <circle cx="44" cy="42" r="3" fill="#9be8ff"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Minh — Church Gamer</h1>
+          <p class="lead">Playing Megaman X (Church Edition) at the Advanced Cathedral</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="card">
+          <h3>Watching</h3>
+          <div class="value" id="watching">2 anime · 2 seasons</div>
+        </div>
+        <div class="card">
+          <h3>Snacks</h3>
+          <div class="value" id="snacks">2 ice creams · 2 pizzas</div>
+        </div>
+      </div>
+
+      <div class="anime-row">
+        <div class="anime" id="anime1">
+          <div class="title">Season 1</div>
+          <div class="screen">
+            <div class="waves"></div>
+            <div class="anim-loop pulse" id="s1frame">S1 — Slice of Spirit</div>
+            <div class="season-badge">S1 · ep12</div>
+          </div>
+          <div class="controls">
+            <button class="btn" onclick="toggleAnime(1)">Play/Pause</button>
+            <button class="btn" onclick="skipEp(1)">Next Ep</button>
+          </div>
+        </div>
+
+        <div class="anime" id="anime2">
+          <div class="title">Season 2</div>
+          <div class="screen">
+            <div class="waves"></div>
+            <div class="anim-loop pulse" id="s2frame">S2 — Neon Psalms</div>
+            <div class="season-badge">S2 · ep01</div>
+          </div>
+          <div class="controls">
+            <button class="btn" onclick="toggleAnime(2)">Play/Pause</button>
+            <button class="btn" onclick="skipEp(2)">Next Ep</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="help">Controls: ← → to move, ↑ to jump, Space to shoot, E to eat. Tap on mobile controls shown in the church area.</div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main class="arena">
+      <div class="vault">
+        <h2>The Highly Advanced Cathedral — Game Night</h2>
+      </div>
+
+      <div class="church-bg">
+        <div class="bg-left">
+          <div class="stained">
+            <!-- decorative SVG stained glass -->
+            <div class="glass" aria-hidden>
+              <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="g1" x1="0" x2="1">
+                    <stop offset="0" stop-color="#2b6cb0" stop-opacity="0.28"/>
+                    <stop offset="1" stop-color="#6b46c1" stop-opacity="0.28"/>
+                  </linearGradient>
+                </defs>
+                <rect width="800" height="600" fill="url(#g1)"/>
+                <g fill-opacity="0.9">
+                  <ellipse cx="200" cy="200" rx="120" ry="180" fill="#6bbcff22"/>
+                  <ellipse cx="400" cy="120" rx="90" ry="130" fill="#ff9bb722"/>
+                  <ellipse cx="620" cy="260" rx="140" ry="200" fill="#9bffcc22"/>
+                </g>
+              </svg>
+            </div>
+
+            <div class="playground" id="playground">
+              <div class="hud" id="hud">Minh · HP: <span id="hp">100</span></div>
+              <canvas id="game" width="900" height="360" aria-label="Minh playing Megaman X"></canvas>
+
+              <!-- mobile controls -->
+              <div style="position:absolute;right:12px;bottom:12px;display:flex;gap:8px;align-items:center">
+                <button class="chip" id="btnLeft">◀</button>
+                <button class="chip" id="btnRight">▶</button>
+                <button class="chip" id="btnJump">▲</button>
+                <button class="chip" id="btnShoot">●</button>
+                <button class="chip" id="btnEat">🍦/🍕</button>
+              </div>
+
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
+              <div class="spectator">
+                <strong>Spectators</strong>
+                <div style="font-size:13px;color:#9dbff6;margin-top:6px">Erzhan & Javokher are at the altar — they watch the battle on the Red Sea projection.</div>
+              </div>
+
+              <div class="spectator">
+                <strong>Scene</strong>
+                <div style="font-size:13px;color:#9dbff6;margin-top:6px">Legendary fire & poisonous swords — Gia Cat Luong casts healing aura when needed.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="right-col">
+          <div class="snacks card">
+            <div style="display:flex;flex-direction:column">
+              <strong>Snacks Tray</strong>
+              <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                <div class="snack" id="ice1"> <svg viewBox="0 0 24 24"><path d="M12 2c-1.3 0-2.5.5-3.4 1.4C9.3 5.7 11 8 12 9c1-1 2.7-3.3 3.4-5.6C14.5 2.5 13.3 2 12 2z" fill="#fff" opacity="0.9"/></svg> Ice Cream 1</div>
+                <div class="snack" id="ice2"> <svg viewBox="0 0 24 24"><path d="M12 2c1.3 0 2.5.5 3.4 1.4C14.7 5.7 13 8 12 9c-1-1-2.7-3.3-3.4-5.6C9.5 2.5 10.7 2 12 2z" fill="#fff" opacity="0.9"/></svg> Ice Cream 2</div>
+              </div>
+
+              <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+                <div class="snack" id="pizza1"> <svg viewBox="0 0 24 24"><path d="M12 2c-5 0-9 4-9 9 0 7 9 11 9 11s9-4 9-11c0-5-4-9-9-9z" fill="#fff" opacity="0.9"/></svg> Pizza 1</div>
+                <div class="snack" id="pizza2"> <svg viewBox="0 0 24 24"><path d="M12 2c5 0 9 4 9 9 0 7-9 11-9 11S3 18 3 11c0-5 4-9 9-9z" fill="#fff" opacity="0.9"/></svg> Pizza 2</div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card" style="padding:12px">
+            <strong>Game Log</strong>
+            <div id="log" style="height:140px;overflow:auto;margin-top:8px;font-size:13px;color:#bcd3ff"></div>
+            <div class="actions" style="margin-top:8px">
+              <button class="btn" onclick="resetGame()">Reset Game</button>
+              <button class="btn" onclick="toggleGodMode()">Toggle God Mode</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <footer style="padding:12px 18px;color:#6fa8ff">Minh's Church Night • 2 Anime · 2 Ice creams · 2 Pizzas — Enjoy the scene</footer>
+
+    </main>
+  </div>
+
+  <script>
+    /* -------------------- Simple Canvas Game: "Megaman X (church version)" --------------------
+       - Minimal platform-ish demo: move left/right, jump, shoot simple projectiles
+       - Minh is represented by a church-robed sprite (simple rectangle + halo)
+       - Enemies spawn as floating 'motes' representing tiny spirits
+       - Eating decreases snack count and increases HP
+    */
+
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width; const H = canvas.height;
+
+    // game state
+    let state = {
+      x: 80, y: H-70, vx:0, vy:0, onGround:true, hp:100,
+      bullets:[], enemies:[], snacks:{ice:2,pizza:2}, watching:[true,true], god:false
+    };
+
+    const GRAV = 0.9;
+    const LOG = document.getElementById('log');
+
+    function log(msg){
+      const d = document.createElement('div'); d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      LOG.prepend(d);
+      if(LOG.children.length>200) LOG.removeChild(LOG.lastChild);
+    }
+
+    // input
+    const keys = {};
+    window.addEventListener('keydown', e=>{ keys[e.key.toLowerCase()]=true; if(e.key===' '){ e.preventDefault(); } });
+    window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
+
+    // mobile buttons
+    document.getElementById('btnLeft').addEventListener('touchstart',e=>{keys['arrowleft']=true});
+    document.getElementById('btnLeft').addEventListener('touchend',e=>{keys['arrowleft']=false});
+    document.getElementById('btnRight').addEventListener('touchstart',e=>{keys['arrowright']=true});
+    document.getElementById('btnRight').addEventListener('touchend',e=>{keys['arrowright']=false});
+    document.getElementById('btnJump').addEventListener('click',()=>keys['arrowup']=true);document.getElementById('btnJump').addEventListener('touchstart',()=>keys['arrowup']=true);
+    document.getElementById('btnShoot').addEventListener('click',()=>keys[' ']=true);document.getElementById('btnShoot').addEventListener('touchstart',()=>keys[' ']=true);
+    document.getElementById('btnEat').addEventListener('click',eatSnack);
+
+
+    function resetGame(){
+      state = {x:80,y:H-70,vx:0,vy:0,onGround:true,hp:100,bullets:[],enemies:[],snacks:{ice:2,pizza:2},watching:[true,true],god:false};
+      updateHUD(); log('Game reset');
+    }
+
+    function toggleGodMode(){ state.god = !state.god; log('God mode ' + (state.god? 'ON':'OFF')); updateHUD(); }
+
+    function spawnEnemy(){
+      const ex = W - 60; const ey = H-80 - Math.random()*140;
+      state.enemies.push({x:ex,y:ey,vx:-1 - Math.random()*1.6, hp:10});
+    }
+
+    // bullets
+    function shoot(){
+      state.bullets.push({x:state.x+28,y:state.y+8,vx:6});
+      playBeep();
+    }
+
+    function playBeep(){
+      try{
+        const a = new (window.AudioContext||window.webkitAudioContext)();
+        const o = a.createOscillator(); const g = a.createGain();
+        o.type = 'sine'; o.frequency.value = 720; g.gain.value = 0.02; o.connect(g); g.connect(a.destination);
+        o.start(); setTimeout(()=>{ o.stop(); a.close(); }, 60);
+      }catch(e){/*ignore*/}
+    }
+
+    function eatSnack(){
+      // prefer ice cream first
+      if(state.snacks.ice>0){ state.snacks.ice--; state.hp = Math.min(120, state.hp+20); log('Minh eats an ice cream — +20 HP'); document.getElementById('ice1').style.opacity = state.snacks.ice>=1?1:0.35; document.getElementById('ice2').style.opacity = state.snacks.ice>=2?1:0.35; }
+      else if(state.snacks.pizza>0){ state.snacks.pizza--; state.hp = Math.min(140, state.hp+30); log('Minh eats a pizza slice — +30 HP'); document.getElementById('pizza1').style.opacity = state.snacks.pizza>=1?1:0.35; document.getElementById('pizza2').style.opacity = state.snacks.pizza>=2?1:0.35; }
+      else { log('No snacks left'); }
+      updateHUD();
+    }
+
+    function toggleAnime(i){ state.watching[i-1]=!state.watching[i-1]; document.getElementById('s'+i+'frame').textContent = state.watching[i-1]? `S${i} — Playing` : `S${i} — Paused`; log(`Toggled Anime S${i} -> ${state.watching[i-1]? 'play':'pause'}`); }
+    function skipEp(i){ log(`Skipped to next ep in S${i}`); document.getElementById('s'+i+'frame').textContent = `S${i} — Ep ${Math.floor(Math.random()*24)+1}`; }
+
+    function updateHUD(){ document.getElementById('hp').textContent = Math.floor(state.hp); document.getElementById('snacks').textContent = `${state.snacks.ice} ice creams · ${state.snacks.pizza} pizzas`; document.getElementById('watching').textContent = `${state.watching.filter(Boolean).length} anime · 2 seasons`; }
+
+    // game loop
+    let frame = 0, spawnInterval = 140;
+    function loop(){
+      frame++;
+      // input handling
+      if(keys['arrowleft']||keys['a']){ state.vx = Math.max(-3.6, state.vx-0.3); }
+      else if(keys['arrowright']||keys['d']){ state.vx = Math.min(3.6, state.vx+0.3); }
+      else { state.vx *= 0.85; if(Math.abs(state.vx)<0.05) state.vx=0; }
+
+      if((keys['arrowup']||keys['w']) && state.onGround){ state.vy = -12; state.onGround=false; log('Minh jumps'); }
+      if(keys[' ']){ if(frame%8===0) shoot(); }
+
+      // physics
+      state.vy += GRAV; state.x += state.vx; state.y += state.vy;
+      if(state.y >= H-70){ state.y = H-70; state.vy = 0; state.onGround=true; }
+      if(state.x < 20) state.x = 20; if(state.x > W-60) state.x = W-60;
+
+      // bullets
+      state.bullets.forEach(b=>{ b.x += b.vx; });
+      state.bullets = state.bullets.filter(b=>b.x < W+50);
+
+      // enemies
+      if(frame%Math.max(60,spawnInterval - Math.floor(frame/600))===0) spawnEnemy();
+      state.enemies.forEach(e=>{ e.x += e.vx; if(Math.random()<0.01) e.vy = Math.sin(frame/10)*0.4; });
+      state.enemies = state.enemies.filter(e=>e.x> -40 && e.hp>0);
+
+      // collisions: bullets -> enemies
+      state.bullets.forEach(b=>{
+        state.enemies.forEach(e=>{
+          if(Math.hypot(b.x-e.x,b.y-e.y) < 28){ e.hp -= 6; b._hit=true; log('Hit enemy'); }
+        });
+      });
+      state.bullets = state.bullets.filter(b=>!b._hit);
+
+      // enemies touch player -> damage
+      state.enemies.forEach(e=>{
+        if(Math.hypot(state.x - e.x, state.y - e.y) < 34){ if(!state.god){ state.hp -= 0.4; } }
+      });
+
+      if(state.hp <= 0){ state.hp = 0; }
+      updateHUD();
+
+      // render
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    function render(){
+      // background
+      ctx.clearRect(0,0,W,H);
+      // floor
+      const grd = ctx.createLinearGradient(0,H-60,0,H); grd.addColorStop(0,'#0b2440'); grd.addColorStop(1,'#020616');
+      ctx.fillStyle = grd; ctx.fillRect(0,H-80,W,H);
+
+      // glowing altar projection (left)
+      ctx.save(); ctx.globalAlpha = 0.08; ctx.fillStyle = '#6be7ff'; ctx.beginPath(); ctx.ellipse(120,80,220,70,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+
+      // enemies
+      state.enemies.forEach(e=>{
+        // spirit mote
+        ctx.save();
+        const hue = 200 + (e.hp*2);
+        ctx.fillStyle = `hsl(${hue} 80% 60%)`;
+        ctx.beginPath(); ctx.arc(e.x,e.y,12 + Math.sin((e.x+e.y)/20)*3,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      });
+
+      // bullets
+      ctx.fillStyle = '#9be8ff';
+      state.bullets.forEach(b=>{ ctx.beginPath(); ctx.arc(b.x,b.y,5,0,Math.PI*2); ctx.fill(); });
+
+      // player (Minh) - church robe + halo + controller helmet
+      ctx.save();
+      ctx.translate(state.x, state.y);
+      // shadow
+      ctx.beginPath(); ctx.ellipse(0,38,26,8,0,0,Math.PI*2); ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fill();
+      // robe
+      ctx.fillStyle = '#0b2a47'; ctx.fillRect(-14,-36,28,44);
+      ctx.fillStyle = '#07263e'; ctx.fillRect(-14,-10,28,22);
+      // halo
+      ctx.beginPath(); ctx.ellipse(0,-46,14,6,0,0,Math.PI*2); ctx.strokeStyle = '#ffd580'; ctx.lineWidth = 3; ctx.stroke();
+      // face (helmet) - controller visor
+      ctx.fillStyle = '#aedcff'; ctx.fillRect(-10,-28,20,12);
+      // glow aura
+      ctx.globalAlpha = 0.12; ctx.fillStyle = '#6be7ff'; ctx.fillRect(-40,-70,80,40);
+      ctx.restore();
+
+      // HUD overlay text
+      ctx.fillStyle = '#bfe6ff'; ctx.font = '12px monospace'; ctx.fillText('Megaman X — Church Edition', 12, 18);
+      ctx.fillStyle = '#9dbff6'; ctx.fillText(`HP: ${Math.floor(state.hp)}`, 12, 34);
+    }
+
+    // start
+    updateHUD(); loop();
+
+    // keep keys clean for mobile button pressed events
+    setInterval(()=>{ keys['arrowup']=false; keys[' ']=false; }, 120);
+
+    // initial logs
+    log('Welcome: Minh starts playing Megaman X (Church version) — two anime are on, snacks ready.');
+    log('Controls: ← → jump, Space shoot, E eat (keyboard)');
+
+    // keyboard: E to eat
+    window.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='e'){ eatSnack(); } });
+
+    // small night-mode shimmer for anime pulse
+    setInterval(()=>{
+      document.querySelectorAll('.anim-loop').forEach(el=>{ el.style.transform = `scale(${1 + Math.random()*0.02}) skewY(${(Math.random()-0.5)*2}deg)` });
+    },2000);
+
+  </script>
+</body>
+</html>

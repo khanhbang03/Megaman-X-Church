@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Megaman X Church — Extended Edition</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at center, #1a1a2e, #000);
+      color: #fff;
+      overflow-x: hidden;
+    }
+    header {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 0 20px #0ff;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #0ff;
+      text-shadow: 0 0 10px #0ff, 0 0 20px #fff;
+    }
+    .arena {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 2rem;
+      gap: 2rem;
+    }
+    canvas {
+      border: 4px solid #fff;
+      border-radius: 12px;
+      background: #222;
+      box-shadow: 0 0 25px #0ff;
+    }
+    .anime-screen {
+      width: 320px;
+      height: 180px;
+      background: linear-gradient(45deg, #444, #111);
+      border-radius: 12px;
+      box-shadow: 0 0 20px #f0f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+    }
+    .snacks {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.2rem;
+    }
+    .characters {
+      margin: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 0 20px rgba(255,255,255,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px #0ff;
+    }
+    .emoji {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⛪ Minh (Church Man) plays Megaman X (Church Version)</h1>
+    <p>While watching 2 anime, eating 2 ice creams 🍦🍦 and 2 pizzas 🍕🍕</p>
+  </header>
+
+  <section class="arena">
+    <canvas id="gameCanvas" width="400" height="300"></canvas>
+    <div class="anime-screen">📺 Anime Season 1</div>
+    <div class="anime-screen">📺 Anime Season 2</div>
+  </section>
+
+  <div class="snacks">
+    <p>🍦🍦 Ice Creams | 🍕🍕 Pizzas — Eat to recover HP!</p>
+  </div>
+
+  <section class="characters">
+    <div class="card">
+      <div class="emoji">📜</div>
+      <h3>Lê Văn Lâm</h3>
+      <p>Glowing aura & floating scrolls</p>
+    </div>
+    <div class="card">
+      <div class="emoji">🤖</div>
+      <h3>Simeon Hansen</h3>
+      <p>Futuristic holograms & AI cores</p>
+    </div>
+    <div class="card">
+      <div class="emoji">🌩️</div>
+      <h3>Phạm Hoàng Hải</h3>
+      <p>Storm effects & sword particles</p>
+    </div>
+    <div class="card">
+      <div class="emoji">🎆</div>
+      <h3>Trần Khôi Nguyên</h3>
+      <p>Fireworks & soaring birds</p>
+    </div>
+    <div class="card">
+      <div class="emoji">🌸</div>
+      <h3>Phạm Bích Thùy</h3>
+      <p>Flowers & butterflies</p>
+    </div>
+  </section>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let x = 50, y = 200;
+    let vx = 0, vy = 0;
+    let keys = {};
+
+    document.addEventListener('keydown', e => keys[e.key] = true);
+    document.addEventListener('keyup', e => keys[e.key] = false);
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Gravity
+      vy += 0.5;
+      y += vy;
+      x += vx;
+
+      // Ground collision
+      if (y > 260) {
+        y = 260;
+        vy = 0;
+      }
+
+      // Controls
+      vx = 0;
+      if (keys['ArrowRight']) vx = 3;
+      if (keys['ArrowLeft']) vx = -3;
+      if (keys[' ']) if (y === 260) vy = -10;
+
+      // Draw player
+      ctx.fillStyle = '#0ff';
+      ctx.fillRect(x, y, 20, 40);
+      ctx.fillStyle = '#fff';
+      ctx.fillText('Minh ⛪', x - 5, y - 5);
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
